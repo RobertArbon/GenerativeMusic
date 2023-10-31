@@ -1,0 +1,6 @@
+Guzheng/
+riffusion/
+.DS_Store
+*.wav
+*.png
+**/.ipynb_checkpoints/
