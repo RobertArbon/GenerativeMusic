@@ -4,9 +4,38 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-riffusion = {file = "riffusion", editable = true}
-jupyter = "*"
+accelerate = "*"
+argh = "*"
+dacite = "*"
+demucs = "*"
+diffusers = ">=0.9.0"
+flask = "*"
+flask-cors = "*"
+numpy = "*"
+pillow = ">=9.1.0"
+plotly = "*"
+pydub = "*"
+pysoundfile = "*"
+scipy = "*"
+soundfile = "*"
+sox = "*"
+streamlit = ">=1.18.0"
+torch = "*"
+torchaudio = "*"
+torchvision = "*"
+transformers = "*"
+black = "*"
+ipdb = "*"
+mypy = "*"
+ruff = "*"
+types-flask-cors = "*"
+types-pillow = "*"
+types-requests = "*"
+types-setuptools = "*"
+types-tqdm = "*"
 jupyterlab = "*"
+riffusion = {file = "../riffusion", editable = true}
+librosa = "*"
 
 [dev-packages]
 
