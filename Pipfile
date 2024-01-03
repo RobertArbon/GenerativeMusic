@@ -36,6 +36,9 @@ types-tqdm = "*"
 jupyterlab = "*"
 riffusion = {file = "../riffusion", editable = true}
 librosa = "*"
+matplotlib = "*"
+noisereduce = "*"
+click = "*"
 
 [dev-packages]
 
