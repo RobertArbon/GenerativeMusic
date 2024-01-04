@@ -4,3 +4,5 @@ riffusion/
 *.wav
 *.png
 **/.ipynb_checkpoints/
+*.jpg
+*.zip
