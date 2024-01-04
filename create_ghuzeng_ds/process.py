@@ -27,9 +27,11 @@ def new_out_path(in_path: str, out_dir: str) -> str:
         if 'Alienated' in str(in_path):
             style = 'Alienated'
         else: 
-            style = re.search(r'_ ([A-Za-z]+) [Ss]chool', str(in_path.stem)).group(1).strip()
+            style = re.search(r'_ ([A-Za-z]+) [Ss]chool', str(in_path.parent)).group(1).strip()
     except AttributeError: 
-        style = 'unknown'
+        print(f"couldn't process {str(in_path)}")
+        raise AttributeError
+
     new_path = Path(out_dir) / Path(style) / in_path.name
     new_path.parent.mkdir(exist_ok=True, parents=True)
     return new_path
@@ -54,8 +56,8 @@ def process_single_file(path: str,
 
     clip_raw_no_noise = nr.reduce_noise(y=clip_raw, 
                                         sr=frame_rate, 
-                                        y_noise=noise_raw, 
-                                        stationary=True, 
+                                        # y_noise=noise_raw, 
+                                        stationary=False, 
                                         prop_decrease=prop_decrease
                                         )
     clip_no_noise = AudioSegment(clip_raw_no_noise.tobytes(), 
