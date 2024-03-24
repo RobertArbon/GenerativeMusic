@@ -6,3 +6,9 @@ riffusion/
 **/.ipynb_checkpoints/
 *.jpg
 *.zip
+*.gdoc
+*.mp3
+*.gsheet
+*.csv
+Data/Guzheng Recordings
+Examples

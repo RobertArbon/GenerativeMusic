@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../riffusion"
+		},
+		{
+			"path": "../../Software/diffusers"
+		}
+	],
+	"settings": {}
+}
