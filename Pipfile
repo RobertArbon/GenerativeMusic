@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+diffusers = "*"
+bitsandbytes = "*"
+torch = "*"
+torchvision = "*"
+torchaudio = "*"
+transformers = "*"
+tqdm = "*"
+packaging = "*"
+datasets = "*"
+accelerate = "*"
+pandas = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"
