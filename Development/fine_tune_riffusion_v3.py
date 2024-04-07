@@ -592,7 +592,7 @@ class Config:
     dataloader_num_workers: int = 4 
     max_train_steps: int = None
     max_train_samples: int = None
-    num_train_epochs: int = 1
+    num_train_epochs: int = 2 
     lr_scheduler: str = "constant"
     lr_warmup_steps: str = 500
     use_ema: bool = False
@@ -610,17 +610,9 @@ class Config:
     variant: str = None
     enable_xformers_memory_efficient_attention: bool = False
 
-# In[14]:
 if __name__ == '__main__':
     # files = list(Path('smallds').glob('*.jpg'))
     # df = pd.DataFrame(data={'file_name': [x.name for x in files], 'text': ['Guzheng']*len(files)})
     # df.to_csv('smallds/metadata.csv', index=False)
     args = Config()
     training_loop(args)
-
-
-# In[ ]:
-
-
-
-
