@@ -60,49 +60,53 @@ logger = get_logger(__name__, log_level="INFO")
 
 
 # In[12]:
-@dataclasses.dataclass
-class Config:
-    output_dir: str = 'riffusion-guzheng-v2'
-    logging_dir: str = 'logs'
-    gradient_accumulation_steps: int = 1
-    gradient_checkpointing: bool = False
-    mixed_precision: str = 'bf16'
-    resolution: int = 512
-    report_to: str = 'tensorboard'
-    seed: int = 42
-    pretrained_model_name_or_path: str = 'riffusion/riffusion-model-v1'
-    use_xformers: bool = False
-    use_8bit_adam: bool = False
-    learning_rate: float = 1e-4
-    adam_beta1: float = 0.9
-    adam_beta2: float = 0.999
-    adam_weight_decay: float = 1e-2
-    adam_epsilon: float = 1e-8
-    max_grad_norm: float =1.0
-    train_data_dir: str ='./smallds'
-    cache_dir: str = None
-    image_column: str = 'image'
-    caption_column: str = 'text'  
-    train_batch_size: int = 8
-    dataloader_num_workers: int = 4 
-    max_train_steps: int = None
-    max_train_samples: int = None
-    num_train_epochs: int = 1
-    lr_scheduler: str = "constant"
-    lr_warmup_steps: str = 500
-    use_ema: bool = False
-    tracker_project_name: str = 'guzheng'
-    resume_from_checkpoint: bool = False # put path to checkpoint or 'latest' here.  Looks in output_dir. 
-    noise_offset: float = 0
-    input_perturbation: float = 0.1
-    prediction_type: str = None  #Choose between 'epsilon' or 'v_prediction' or leave `None`. If left to `None` the default prediction type of the scheduler: `noise_scheduler.config.prediction_type` is chosen.
-    snr_gamma: float = None
-    checkpointing_steps: int = 50
-    checkpoints_total_limit: int = 2 
-    validation_prompts: str = 'Solo Guzhen Music'
-    validation_epochs: int = 1
 
-args = Config()
+
+
+def log_validation(vae, text_encoder, tokenizer, unet, args, accelerator, weight_dtype, epoch):
+    logger.info("Running validation... ")
+
+    pipeline = StableDiffusionPipeline.from_pretrained(
+        args.pretrained_model_name_or_path,
+        vae=accelerator.unwrap_model(vae),
+        text_encoder=accelerator.unwrap_model(text_encoder),
+        tokenizer=tokenizer,
+        unet=accelerator.unwrap_model(unet),
+        safety_checker=None,
+        revision=args.revision,
+        variant=args.variant,
+        torch_dtype=weight_dtype,
+    )
+    pipeline = pipeline.to(accelerator.device)
+    pipeline.set_progress_bar_config(disable=True)
+
+    if args.enable_xformers_memory_efficient_attention:
+        pipeline.enable_xformers_memory_efficient_attention()
+
+    if args.seed is None:
+        generator = None
+    else:
+        generator = torch.Generator(device=accelerator.device).manual_seed(args.seed)
+
+    images = []
+    for i in range(len(args.validation_prompts)):
+        with torch.autocast("cuda"):
+            image = pipeline(args.validation_prompts[i], num_inference_steps=20, generator=generator).images[0]
+
+        images.append(image)
+
+    for tracker in accelerator.trackers:
+        if tracker.name == "tensorboard":
+            np_images = np.stack([np.asarray(img) for img in images])
+            tracker.writer.add_images("validation", np_images, epoch, dataformats="NHWC")
+        else:
+            logger.warn(f"image logging not implemented for {tracker.name}")
+
+    del pipeline
+    torch.cuda.empty_cache()
+
+    return images
+
 
 def training_loop(args: Config):
     
@@ -194,7 +198,6 @@ def training_loop(args: Config):
     data_files = {}
     
     data_files["train"] = os.path.join(args.train_data_dir, "**")
-    print(data_files)
     dataset = load_dataset(
         "imagefolder",
         data_files=data_files,
@@ -556,19 +559,63 @@ def training_loop(args: Config):
             for i in range(len(args.validation_prompts)):
                 with torch.autocast("cuda"):
                     image = pipeline(args.validation_prompts[i], num_inference_steps=20, generator=generator).images[0]                
-                    imgage.save(f"{args.output_dir}/final_images_prompt_{i}.jpg")
+                    image.save(f"{args.output_dir}/final_images_prompt_{i}.jpg")
     
     
     accelerator.end_training()
-
 # training_loop(args)
 
+@dataclasses.dataclass
+class Config:
+    output_dir: str = 'riffusion-guzheng-v2'
+    logging_dir: str = 'logs'
+    gradient_accumulation_steps: int = 1
+    gradient_checkpointing: bool = False
+    mixed_precision: str = 'bf16'
+    resolution: int = 512
+    report_to: str = 'tensorboard'
+    seed: int = 42
+    pretrained_model_name_or_path: str = 'riffusion/riffusion-model-v1'
+    use_xformers: bool = False
+    use_8bit_adam: bool = False
+    learning_rate: float = 1e-4
+    adam_beta1: float = 0.9
+    adam_beta2: float = 0.999
+    adam_weight_decay: float = 1e-2
+    adam_epsilon: float = 1e-8
+    max_grad_norm: float =1.0
+    train_data_dir: str ='./smallds'
+    cache_dir: str = None
+    image_column: str = 'image'
+    caption_column: str = 'text'  
+    train_batch_size: int = 8
+    dataloader_num_workers: int = 4 
+    max_train_steps: int = None
+    max_train_samples: int = None
+    num_train_epochs: int = 1
+    lr_scheduler: str = "constant"
+    lr_warmup_steps: str = 500
+    use_ema: bool = False
+    tracker_project_name: str = 'guzheng'
+    resume_from_checkpoint: bool = False # put path to checkpoint or 'latest' here.  Looks in output_dir. 
+    noise_offset: float = 0
+    input_perturbation: float = 0.1
+    prediction_type: str = None  #Choose between 'epsilon' or 'v_prediction' or leave `None`. If left to `None` the default prediction type of the scheduler: `noise_scheduler.config.prediction_type` is chosen.
+    snr_gamma: float = None
+    checkpointing_steps: int = 50
+    checkpoints_total_limit: int = 1  
+    validation_prompts: str = 'Solo Guzheng Music'
+    validation_epochs: int = 1
+    revision: str = None
+    variant: str = None
+    enable_xformers_memory_efficient_attention: bool = False
 
 # In[14]:
 if __name__ == '__main__':
     # files = list(Path('smallds').glob('*.jpg'))
     # df = pd.DataFrame(data={'file_name': [x.name for x in files], 'text': ['Guzheng']*len(files)})
     # df.to_csv('smallds/metadata.csv', index=False)
+    args = Config()
     training_loop(args)
 
 
