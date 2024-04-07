@@ -65,7 +65,7 @@ class Config:
     output_dir: str = 'riffusion-guzheng-v2'
     logging_dir: str = 'logs'
     gradient_accumulation_steps: int = 1
-    gradient_checkpoints: bool = False
+    gradient_checkpointing: bool = False
     mixed_precision: str = 'bf16'
     resolution: int = 512
     report_to: str = 'tensorboard'
@@ -81,7 +81,7 @@ class Config:
     max_grad_norm: float =1.0
     train_data_dir: str ='./smallds'
     cache_dir: str = None
-    image_column: str = 'file_name'
+    image_column: str = 'image'
     caption_column: str = 'text'  
     train_batch_size: int = 8
     dataloader_num_workers: int = 4 
@@ -96,7 +96,7 @@ class Config:
     noise_offset: float = 0
     input_perturbation: float = 0.1
     prediction_type: str = None  #Choose between 'epsilon' or 'v_prediction' or leave `None`. If left to `None` the default prediction type of the scheduler: `noise_scheduler.config.prediction_type` is chosen.
-    snr_gamme: float = None
+    snr_gamma: float = None
     checkpointing_steps: int = 50
     checkpoints_total_limit: int = 2 
     validation_prompts: str = 'Solo Guzhen Music'
@@ -194,9 +194,11 @@ def training_loop(args: Config):
     data_files = {}
     
     data_files["train"] = os.path.join(args.train_data_dir, "**")
+    print(data_files)
     dataset = load_dataset(
         "imagefolder",
         data_files=data_files,
+        # column_names=[args.]
         cache_dir=args.cache_dir,
     )
         # See more about loading custom images at
@@ -564,9 +566,9 @@ def training_loop(args: Config):
 
 # In[14]:
 if __name__ == '__main__':
-    files = list(Path('smallds').glob('*.jpg'))
-    df = pd.DataFrame(data={'file_name': [x.name for x in files], 'text': ['Guzheng']*len(files)})
-    df.to_csv('smallds/metadata.csv')
+    # files = list(Path('smallds').glob('*.jpg'))
+    # df = pd.DataFrame(data={'file_name': [x.name for x in files], 'text': ['Guzheng']*len(files)})
+    # df.to_csv('smallds/metadata.csv', index=False)
     training_loop(args)
 
 
