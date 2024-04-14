@@ -17,6 +17,8 @@ accelerate = "*"
 pandas = "*"
 
 [dev-packages]
+torch-tb-profiler = "*"
+ipykernel = "*"
 
 [requires]
 python_version = "3.10"
