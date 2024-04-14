@@ -108,7 +108,7 @@ def log_validation(vae, text_encoder, tokenizer, unet, args, accelerator, weight
     return images
 
 
-def training_loop(args: Config):
+def training_loop(args):
     
     logging_dir = os.path.join(args.output_dir, args.logging_dir)
     accelerator_project_config = ProjectConfiguration(project_dir=args.output_dir, logging_dir=logging_dir)
@@ -588,11 +588,11 @@ class Config:
     cache_dir: str = None
     image_column: str = 'image'
     caption_column: str = 'text'  
-    train_batch_size: int = 8
+    train_batch_size: int = 8 
     dataloader_num_workers: int = 4 
     max_train_steps: int = None
     max_train_samples: int = None
-    num_train_epochs: int = 2 
+    num_train_epochs: int = 100 
     lr_scheduler: str = "constant"
     lr_warmup_steps: str = 500
     use_ema: bool = False
@@ -602,17 +602,19 @@ class Config:
     input_perturbation: float = 0.1
     prediction_type: str = None  #Choose between 'epsilon' or 'v_prediction' or leave `None`. If left to `None` the default prediction type of the scheduler: `noise_scheduler.config.prediction_type` is chosen.
     snr_gamma: float = None
-    checkpointing_steps: int = 50
+    checkpointing_steps: int = 50 
     checkpoints_total_limit: int = 1  
-    validation_prompts: str = 'Solo Guzheng Music'
+    validation_prompts: str = 'Guzheng'
     validation_epochs: int = 1
     revision: str = None
     variant: str = None
     enable_xformers_memory_efficient_attention: bool = False
 
 if __name__ == '__main__':
-    # files = list(Path('smallds').glob('*.jpg'))
-    # df = pd.DataFrame(data={'file_name': [x.name for x in files], 'text': ['Guzheng']*len(files)})
-    # df.to_csv('smallds/metadata.csv', index=False)
-    args = Config()
+    train_data_dir = './Dataset'
+    files = list(Path(train_data_dir).glob('*.jpg'))
+    df = pd.DataFrame(data={'file_name': [x.name for x in files], 'text': ['Guzheng']*len(files)})
+    df.to_csv(f'{train_data_dir}/metadata.csv', index=False)
+    args = Config(train_data_dir=train_data_dir,checkpointing_steps = 300, 
+                    resolution=256, train_batch_size=32 )
     training_loop(args)
