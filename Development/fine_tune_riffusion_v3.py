@@ -1,25 +1,16 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# `fine_tune_riffusion.ipynb` was borking the pipeline.  So I need a better way of tuning it.  I will try and do it in a more transparent way here (rather than use the script provided in the examples folder exactly. )
-# 
-# I'm basing this training notebook on the script [here](https://github.com/huggingface/diffusers/blob/main/examples/text_to_image/train_text_to_image.py)
-
-# In[4]:
-
-
-import argparse
-import logging
 import math
 import os
 import random
 import shutil
 from pathlib import Path
 import dataclasses
+from typing import *
 
-
-import zipfile
 import pandas as pd
+import json
 
 import accelerate
 import datasets
@@ -51,16 +42,6 @@ from diffusers.utils.import_utils import is_xformers_available
 from diffusers.utils.torch_utils import is_compiled_module
 
 logger = get_logger(__name__, log_level="INFO")
-# In[3]:
-
-
-# get_ipython().system('mkdir smallds')
-# get_ipython().system('cp spectrograms/clip_{1..1000..3}.jpg smallds/')
-
-
-
-# In[12]:
-
 
 
 def log_validation(vae, text_encoder, tokenizer, unet, args, accelerator, weight_dtype, epoch):
@@ -604,17 +585,21 @@ class Config:
     snr_gamma: float = None
     checkpointing_steps: int = 50 
     checkpoints_total_limit: int = 1  
-    validation_prompts: str = 'Guzheng'
+    validation_prompts: List[str] = dataclasses.field(default_factory=lambda: ['Guzheng'])
     validation_epochs: int = 1
     revision: str = None
     variant: str = None
     enable_xformers_memory_efficient_attention: bool = False
 
 if __name__ == '__main__':
+
     train_data_dir = './Dataset'
     files = list(Path(train_data_dir).glob('*.jpg'))
     df = pd.DataFrame(data={'file_name': [x.name for x in files], 'text': ['Guzheng']*len(files)})
     df.to_csv(f'{train_data_dir}/metadata.csv', index=False)
-    args = Config(train_data_dir=train_data_dir,checkpointing_steps = 300, 
-                    resolution=256, train_batch_size=32 )
+    args = Config(train_data_dir=train_data_dir,
+                  checkpointing_steps = 300, 
+                    resolution=256, train_batch_size=32)
+    with open(f'{args.output_dir}/config.json', 'w') as fp:
+        json.dump(vars(args), fp, sort_keys=True, indent=4)
     training_loop(args)
