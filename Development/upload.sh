@@ -11,8 +11,11 @@ gsutil -m cp riffusion-guzheng-v2/model_index.json gs://generative_music/${udir}
 gsutil -m cp -r riffusion-guzheng-v2/logs gs://generative_music/${udir}/logs
 for wav in `find riffusion-guzheng-v2/ -name '*.wav' -type f`;
 do
-    gsutil -m cp -r ${wav} gs://generative_music/2024-04-21_10-32/${wav}
+    gsutil -m cp -r ${wav} gs://generative_music/${udir}/${wav}
 done
 
-
+for jpg in `find riffusion-guzheng-v2/ -name '*.jpg' -type f`;
+do
+    gsutil -m cp -r ${jpg} gs://generative_music/${udir}/${jpg}
+done
 
