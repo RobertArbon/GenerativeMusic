@@ -561,7 +561,7 @@ def training_loop(args):
                     fname = f"{args.output_dir}/{prompt.replace(' ', '_')}"
                     image = pipeline(prompt, num_inference_steps=20, generator=generator).images[0]                
                     image.save(f"{fname}.jpg")
-                    audio = image_to_audio(images[0])
+                    audio = image_to_audio(image)
                     audio.export(f"{fname}.wav")
     
     accelerator.end_training()
@@ -615,16 +615,19 @@ class Config:
 if __name__ == '__main__':
 
     train_data_dir = './Dataset'
-    files = list(Path(train_data_dir).glob('*.jpg'))
-    df = pd.DataFrame(data={'file_name': [x.name for x in files], 'text': ['Guzheng']*len(files)})
-    df.to_csv(f'{train_data_dir}/metadata.csv', index=False)
+    # files = list(Path(train_data_dir).glob('*.jpg'))
+    # df = pd.DataFrame(data={'file_name': [x.name for x in files], 'text': ['Guzheng']*len(files)})
+    # df.to_csv(f'{train_data_dir}/metadata.csv', index=False)
     args = Config(train_data_dir=train_data_dir,
                   checkpointing_steps = 300, 
-                  resolution=256, train_batch_size=32, 
+                  resolution=256, 
+                  train_batch_size=16, 
                   learning_rate=1e-4, 
+                  validation_prompts=['lofi funk', 'happy pop', 'guzheng'],
+                  num_train_epochs = 500,
                   use_ema=True)
 
     Path(args.output_dir).mkdir(exist_ok=True, parents=True)
-    with open(f'{args.output_dir}/config.json', 'w') as fp:
+    with open(f'{args.output_dir}/config.json', 'wt') as fp:
         json.dump(vars(args), fp, sort_keys=True, indent=4)
     training_loop(args)
