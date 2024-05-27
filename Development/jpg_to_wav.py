@@ -258,19 +258,19 @@ def image_to_audio(img):
 # In[61]:
 
 
-pipeline = StableDiffusionPipeline.from_pretrained(
-            'riffusion-guzheng-v2')
-pipeline.to('cuda')
-generator = torch.Generator(device='cuda').manual_seed(42)
+# pipeline = StableDiffusionPipeline.from_pretrained(
+#             'riffusion-guzheng-v2')
+# pipeline.to('cuda')
+# generator = torch.Generator(device='cuda').manual_seed(42)
 
 
-# In[66]:
+# # In[66]:
 
 
-prompts = ['lofi funk', 'happy pop', 'solo guzheng']
-for prompt in prompts:
-    images = pipeline('lofi funk', num_inference_steps=20, generator=generator)
-    audio = image_to_audio(images[0][0])
-    fname = f"riffusion-guzheng-v2/{prompt.replace(' ', '_')}.wav"
-    audio.export(fname)
+# prompts = ['lofi funk', 'happy pop', 'solo guzheng']
+# for prompt in prompts:
+#     images = pipeline('lofi funk', num_inference_steps=20, generator=generator)
+#     audio = image_to_audio(images[0][0])
+#     fname = f"riffusion-guzheng-v2/{prompt.replace(' ', '_')}.wav"
+#     audio.export(fname)
 
