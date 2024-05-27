@@ -556,11 +556,13 @@ def training_loop(args):
             else:
                 generator = torch.Generator(device=accelerator.device).manual_seed(args.seed)
     
-            for i in range(len(args.validation_prompts)):
+            for prompt in args.validation_prompts:
                 with torch.autocast("cuda"):
-                    image = pipeline(args.validation_prompts[i], num_inference_steps=20, generator=generator).images[0]                
-                    image.save(f"{args.output_dir}/final_images_prompt_{i}.jpg")
-    
+                    fname = f"{args.output_dir}/{prompt.replace(' ', '_')}"
+                    image = pipeline(prompt, num_inference_steps=20, generator=generator).images[0]                
+                    image.save(f"{fname}.jpg")
+                    audio = image_to_audio(images[0])
+                    audio.export(f"{fname}.wav")
     
     accelerator.end_training()
 # training_loop(args)
