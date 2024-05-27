@@ -125,16 +125,33 @@ def training_loop(args):
     text_encoder.requires_grad_(False)
     vae.requires_grad_(False)
     unet.train()
+
+
+    if args.use_ema:
+        ema_unet = UNet2DConditionModel.from_pretrained(
+            args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
+        )
+        ema_unet = EMAModel(ema_unet.parameters(), model_cls=UNet2DConditionModel, model_config=ema_unet.config)
+
     if args.use_xformers:
         unet.enable_xformers_memory_efficient_attention()
     
     def save_model_hook(models, weights, output_dir):
         if accelerator.is_main_process:
+            if args.use_ema:
+                ema_unet.save_pretrained(os.path.join(output_dir, "unet_ema"))
+
             for i, model in enumerate(models):
                 model.save_pretrained(os.path.join(output_dir, "unet"))
                 weights.pop()
     
     def load_model_hook(models, input_dir):
+        if args.use_ema:
+            load_model = EMAModel.from_pretrained(os.path.join(input_dir, "unet_ema"), UNet2DConditionModel)
+            ema_unet.load_state_dict(load_model.state_dict())
+            ema_unet.to(accelerator.device)
+            del load_model
+
         for _ in range(len(models)):
             # pop models so that they are not loaded again
             model = models.pop()
