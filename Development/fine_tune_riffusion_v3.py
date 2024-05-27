@@ -8,20 +8,20 @@ import shutil
 from pathlib import Path
 import dataclasses
 from typing import *
-
-import pandas as pd
 import json
 
-import accelerate
-import datasets
+import pandas as pd
+
+# import accelerate
+# import datasets
 import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint
-import transformers
+# import transformers
 from accelerate import Accelerator
 from accelerate.logging import get_logger
-from accelerate.state import AcceleratorState
+# from accelerate.state import AcceleratorState
 from accelerate.utils import ProjectConfiguration, set_seed
 from datasets import load_dataset
 # from huggingface_hub import create_repo, upload_folder
@@ -29,17 +29,19 @@ from datasets import load_dataset
 from torchvision import transforms
 from tqdm.auto import tqdm
 from transformers import CLIPTextModel, CLIPTokenizer
-from transformers.utils import ContextManagers
+# from transformers.utils import ContextManagers
 import bitsandbytes as bnb
 
 
-import diffusers
+# import diffusers
 from diffusers import AutoencoderKL, DDPMScheduler, StableDiffusionPipeline, UNet2DConditionModel
 from diffusers.optimization import get_scheduler
 from diffusers.training_utils import EMAModel, compute_snr
 from diffusers.utils import check_min_version, deprecate, is_wandb_available, make_image_grid
 from diffusers.utils.import_utils import is_xformers_available
 from diffusers.utils.torch_utils import is_compiled_module
+
+from jpg_to_wav import image_to_audio
 
 logger = get_logger(__name__, log_level="INFO")
 
