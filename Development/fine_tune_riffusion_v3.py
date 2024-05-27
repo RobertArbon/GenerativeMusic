@@ -599,7 +599,9 @@ if __name__ == '__main__':
     df.to_csv(f'{train_data_dir}/metadata.csv', index=False)
     args = Config(train_data_dir=train_data_dir,
                   checkpointing_steps = 300, 
-                    resolution=256, train_batch_size=32)
+                    resolution=256, train_batch_size=32, 
+                    learning_rate=1e-5)
+
     Path(args.output_dir).mkdir(exist_ok=True, parents=True)
     with open(f'{args.output_dir}/config.json', 'w') as fp:
         json.dump(vars(args), fp, sort_keys=True, indent=4)
